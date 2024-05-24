@@ -1,0 +1,17 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      default-filters:
+      routes:
+        - id: auth
+          uri: ${keycloak.auth-server-url}
+          predicates:
+            - Path=/openid-connect/**
+          filters:
+            - RewritePath=/openid-connect,/realms/${keycloak.realm}/protocol/openid-connect
