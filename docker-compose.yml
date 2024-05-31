@@ -18,6 +18,7 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: qwe123
+      KC_HTTP_RELATIVE_PATH: "/auth"
     volumes:
       - ./keycloak/realms/autobahn_v1.json:/opt/keycloak/data/import/realm.json
     ports:
