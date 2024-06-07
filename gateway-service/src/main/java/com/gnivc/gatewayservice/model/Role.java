@@ -1,4 +1,4 @@
-package com.gnivc.gatewayservice.congifure;
+package com.gnivc.gatewayservice.model;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

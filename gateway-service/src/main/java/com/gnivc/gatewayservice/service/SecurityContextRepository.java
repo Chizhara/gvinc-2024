@@ -1,4 +1,4 @@
-package com.gnivc.gatewayservice.congifure;
+package com.gnivc.gatewayservice.service;
 
 import com.gnivc.gatewayservice.model.AuthenticationImpl;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -32,6 +32,9 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         ServerHttpRequest request = swe.getRequest();
         String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         Optional<String> companyId = extractGroupId(request.getPath());
+        if (token == null) {
+            return Mono.empty();
+        }
         return Mono.just(companyId
             .map(s ->
                 new AuthenticationImpl(token, s)).orElseGet(() ->

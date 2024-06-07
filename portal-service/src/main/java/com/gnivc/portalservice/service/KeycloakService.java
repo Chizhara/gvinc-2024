@@ -1,7 +1,6 @@
 package com.gnivc.portalservice.service;
 
 import com.gnivc.portalservice.dto.UserCreateRequest;
-import com.gnivc.portalservice.dto.UserCreateResponse;
 import com.gnivc.portalservice.dto.UserRole;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,12 +34,20 @@ public class KeycloakService {
         return user;
     }
 
+    public void removeUser(String userId) {
+        keycloakRealm().users().get(userId).remove();
+    }
+
     public GroupRepresentation createGroup(String groupName, String userId) {
         GroupRepresentation group = createGroup(groupName);
         List<GroupRepresentation> subGroups = createSubGroups(group);
         group.setSubGroups(subGroups);
         addUserToGroup(userId, group);
         return group;
+    }
+
+    public void addUserToGroup(String groupId) {
+
     }
 
     private UserRepresentation createUser(UserCreateRequest userDto, UserRole userRole) {

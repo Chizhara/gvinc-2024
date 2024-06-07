@@ -1,5 +1,7 @@
 package com.gnivc.gatewayservice.congifure;
 
+import com.gnivc.gatewayservice.service.ApplicationSecurityProvider;
+import com.gnivc.gatewayservice.service.SecurityContextRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +30,10 @@ public class ApplicationSecurityConfig {
             .authenticationManager(provider)
             .authorizeExchange(requests -> {
                 requests.pathMatchers("/actuator/**").permitAll();
+                requests.pathMatchers("/portal/registrator").permitAll();
                 requests.pathMatchers("/openid-connect/**").permitAll();
                 requests.pathMatchers("/portal/company/**").authenticated();
                 requests.pathMatchers("/portal/company").hasRole("REGISTRATOR");
-                requests.pathMatchers("/portal/registrator").permitAll();
             }).build();
     }
 

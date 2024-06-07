@@ -24,6 +24,3 @@ spring:
           uri: ${portal.server-url}
           predicates:
             - Path=/portal/**
-          filters:
-            - RewritePath=/portal,/portal
-

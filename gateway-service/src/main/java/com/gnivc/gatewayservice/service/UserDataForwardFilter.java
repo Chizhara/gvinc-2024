@@ -2,6 +2,7 @@ package com.gnivc.gatewayservice.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gnivc.gatewayservice.model.UserDetailsEnhanced;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -16,7 +17,6 @@ import reactor.core.publisher.Mono;
 public class UserDataForwardFilter implements GlobalFilter {
     private final ObjectMapper objectMapper;
 
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return ReactiveSecurityContextHolder.getContext()
@@ -25,7 +25,7 @@ public class UserDataForwardFilter implements GlobalFilter {
                 UserDetailsEnhanced userDetails = (UserDetailsEnhanced) context.getAuthentication().getDetails();
                 ServerHttpRequest request = getModifiedRequest(exchange, userDetails);
                 return chain.filter(exchange.mutate().request(request).build());
-            });
+            }).switchIfEmpty(chain.filter(exchange));
     }
 
     private ServerHttpRequest getModifiedRequest(ServerWebExchange exchange, UserDetailsEnhanced userDetails) {

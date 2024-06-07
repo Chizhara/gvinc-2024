@@ -1,6 +1,7 @@
-package com.gnivc.gatewayservice.congifure;
+package com.gnivc.gatewayservice.service;
 
 import com.gnivc.gatewayservice.model.AuthenticationImpl;
+import com.gnivc.gatewayservice.model.UserDetailsImpl;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.UserResource;

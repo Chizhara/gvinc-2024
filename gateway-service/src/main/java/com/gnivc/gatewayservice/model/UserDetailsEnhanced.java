@@ -1,4 +1,4 @@
-package com.gnivc.gatewayservice.service;
+package com.gnivc.gatewayservice.model;
 
 import org.springframework.security.core.userdetails.UserDetails;
 

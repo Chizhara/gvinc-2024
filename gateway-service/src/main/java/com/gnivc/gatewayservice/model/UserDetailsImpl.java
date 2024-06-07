@@ -1,6 +1,5 @@
-package com.gnivc.gatewayservice.congifure;
+package com.gnivc.gatewayservice.model;
 
-import com.gnivc.gatewayservice.service.UserDetailsEnhanced;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
