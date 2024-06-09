@@ -26,8 +26,6 @@ public class KeycloakConfiguration {
             .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
             .clientId(clientId)
             .clientSecret(clientSecret)
-//            .username("admin")
-//            .password("root")
             .build();
     }
 }

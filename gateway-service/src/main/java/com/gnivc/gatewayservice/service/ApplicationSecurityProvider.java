@@ -47,7 +47,6 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
             String userId = jwt.getClaimAsString(USER_ID_CLAIM);
             String username = jwt.getClaimAsString(USERNAME_CLAIM);
             UserResource user = getUser(userId);
-            getRealmRole(user); //TODO можно пересмотреть методы
             List<String> roles = getUserRole(user, auth);
             auth.setDetails(new UserDetailsImpl(userId, username, null, roles));
             auth.setAuthenticated(true);
@@ -74,18 +73,9 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
     }
 
     private String getCompanyRole(UserResource user, String companyId) {
-        GroupResource company = getCompany(user.toRepresentation().getId(), companyId);
-        List<GroupRepresentation> userCompanies = user.groups();
-        GroupRepresentation roleGroup = company.toRepresentation()
-            .getSubGroups()
-            .stream()
-            .filter(groupRepresentation ->
-                userCompanies.stream()
-                    .anyMatch(temp -> groupRepresentation.getId().equals(temp.getId())))
-            .findFirst()
-            .orElseThrow();
+        GroupRepresentation company = getCompany(user.toRepresentation().getId(), companyId);
 
-        return roleGroup.getRealmRoles().get(0);
+        return keycloak.realm(realm).groups().group(company.getId()).roles().realmLevel().listAll().get(0).getName();
     }
 
     private RoleRepresentation getRealmRole(UserResource user) {
@@ -99,17 +89,28 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
             .orElse(null);
     }
 
-    private GroupResource getCompany(String userId, String companyId) {
-        GroupResource companyResource = keycloak.realm(realm).groups().group(companyId);
+    private GroupRepresentation getCompany(String userId, String companyId) {
+        GroupRepresentation companyRep = findCompanyByName(companyId);
+        return getSubGroup(companyRep, userId);
+    }
 
-        companyResource.members()
-            .stream()
-            .filter(member ->
-                member.getId().equals(userId))
+    private GroupRepresentation findCompanyByName(String companyName) {
+        return keycloak.realm(realm).groups().groups().stream()
+            .filter(group -> group.getName().equals(companyName))
+            .findFirst().orElseThrow();
+    }
+
+    private GroupRepresentation getSubGroup(GroupRepresentation group, String userId) {
+        List<GroupRepresentation> subGroups = group.getSubGroups();
+        return subGroups.stream()
+            .filter(subGroup -> containsMember(subGroup, userId))
             .findFirst()
             .orElseThrow();
+    }
 
-        return companyResource;
+    private boolean containsMember(GroupRepresentation subGroup, String memberId) {
+        return keycloak.realm(realm).groups().group(subGroup.getId()).members().stream()
+            .anyMatch(member -> member.getId().equals(memberId));
     }
 
     private Mono<Jwt> getJwt(BearerTokenAuthenticationToken bearerTokenAuthentication) {

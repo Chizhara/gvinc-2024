@@ -1,5 +1,6 @@
 package com.gnivc.gatewayservice.congifure;
 
+import com.gnivc.gatewayservice.model.Role;
 import com.gnivc.gatewayservice.service.ApplicationSecurityProvider;
 import com.gnivc.gatewayservice.service.SecurityContextRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,11 @@ public class ApplicationSecurityConfig {
                 requests.pathMatchers("/portal/registrator").permitAll();
                 requests.pathMatchers("/openid-connect/**").permitAll();
                 requests.pathMatchers("/portal/company/**").authenticated();
+                requests.pathMatchers("/portal/company/{companyId}/user/admin").hasRole("ADMIN");
+                requests.pathMatchers("/portal/company/{companyId}/user/logist").hasRole("LOGIST");
+                requests.pathMatchers("/portal/company/{companyId}/user/driver").hasAnyRole("ADMIN", "LOGIST");
                 requests.pathMatchers("/portal/company").hasRole("REGISTRATOR");
             }).build();
     }
-
 
 }

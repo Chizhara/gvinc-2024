@@ -1,4 +1,4 @@
-package com.gnivc.portalservice.dto;
+package com.gnivc.portalservice.model.user;
 
 public enum UserRole {
     REGISTRATOR,

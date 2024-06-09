@@ -36,17 +36,17 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
             return Mono.empty();
         }
         return Mono.just(companyId
-            .map(s ->
-                new AuthenticationImpl(token, s)).orElseGet(() ->
-                new AuthenticationImpl(token)))
+                .map(s ->
+                    new AuthenticationImpl(token, s)).orElseGet(() ->
+                    new AuthenticationImpl(token)))
             .flatMap(this::getSecurityContext);
     }
 
     public Optional<String> extractGroupId(RequestPath requestPath) {
         List<PathContainer.Element> pathParts = requestPath.elements(); //TODO можно оптимизировать;
-        for(int i = 0; i < pathParts.size() - 1; i++) {
-            if(pathParts.get(i).value().equals("company")) {
-                return Optional.of(pathParts.get(i+1).value());
+        for (int i = 0; i < pathParts.size() - 1; i++) {
+            if (pathParts.get(i).value().equals("company")) {
+                return Optional.of(pathParts.get(i + 2).value());
             }
         }
         return Optional.empty();

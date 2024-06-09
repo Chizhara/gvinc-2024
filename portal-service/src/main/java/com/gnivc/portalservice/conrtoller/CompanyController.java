@@ -1,10 +1,12 @@
 package com.gnivc.portalservice.conrtoller;
 
-import com.gnivc.portalservice.dto.CompanyCreateRequest;
+import com.gnivc.portalservice.model.company.dto.AddUserToCompanyRequest;
+import com.gnivc.portalservice.model.company.dto.CompanyCreateRequest;
+import com.gnivc.portalservice.model.user.UserRole;
 import com.gnivc.portalservice.service.CompanyService;
-import com.gnivc.portalservice.service.KeycloakService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -25,9 +27,22 @@ public class CompanyController {
         companyService.createCompany(companyCreateRequest, userId);
     }
 
-    public void addUserToCompany(@RequestHeader("x-userId") String userId,
-                                 @RequestBody CompanyCreateRequest companyCreateRequest) {
+    @PostMapping("/{companyName}/user/admin")
+    public void addAdminToCompany(@PathVariable String companyName,
+                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+        companyService.addUserToCompany(addUserToCompanyRequest, companyName, UserRole.ADMIN);
+    }
 
+    @PostMapping("/{companyName}/user")
+    public void addLogistToCompany(@PathVariable String companyName,
+                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+        companyService.addUserToCompany(addUserToCompanyRequest, companyName, UserRole.LOGIST);
+    }
+
+    @PostMapping("/{companyName}/user/driver")
+    public void addDriverToCompany(@PathVariable String companyName,
+                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+        companyService.addUserToCompany(addUserToCompanyRequest, companyName, UserRole.DRIVER);
     }
 
 }

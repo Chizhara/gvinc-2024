@@ -1,11 +1,13 @@
 package com.gnivc.portalservice.conrtoller;
 
-import com.gnivc.portalservice.dto.UserCreateRequest;
-import com.gnivc.portalservice.dto.UserCreateResponse;
+import com.gnivc.portalservice.model.user.dto.UserCreateRequest;
+import com.gnivc.portalservice.model.user.dto.UserCreateResponse;
+import com.gnivc.portalservice.model.user.dto.UserUpdateRequest;
 import com.gnivc.portalservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -24,4 +26,8 @@ public class AuthController {
         return userService.createUser(userCreateRequest);
     }
 
+    @PutMapping("/password")
+    public UserCreateResponse updateUser(@RequestBody String userId) {
+        return userService.updatePassword(userId);
+    }
 }

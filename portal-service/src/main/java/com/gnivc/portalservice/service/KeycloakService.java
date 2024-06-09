@@ -1,10 +1,11 @@
 package com.gnivc.portalservice.service;
 
-import com.gnivc.portalservice.dto.UserCreateRequest;
-import com.gnivc.portalservice.dto.UserRole;
+import com.gnivc.portalservice.model.user.dto.UserCreateRequest;
+import com.gnivc.portalservice.model.user.UserRole;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +28,18 @@ public class KeycloakService {
     private String realm;
 
     public UserRepresentation addUser(UserCreateRequest userDto, UserRole userRole) {
-        UserRepresentation user = createUser(userDto, userRole);
+        UserRepresentation user = createUser(userDto);
         addRealmRoleToUser(user.getId(), userRole);
 
         return user;
+    }
+
+    public UserRepresentation updatePassword(String userId) {
+        CredentialRepresentation credential = createPasswordCredentials();
+        UserResource userResource = keycloakRealm().users().get(userId);
+        userResource.resetPassword(credential);
+
+        return userResource.toRepresentation();
     }
 
     public void removeUser(String userId) {
@@ -46,11 +54,21 @@ public class KeycloakService {
         return group;
     }
 
-    public void addUserToGroup(String groupId) {
-
+    public void removeGroup(String groupId) {
+        keycloakRealm().groups().group(groupId).remove();
     }
 
-    private UserRepresentation createUser(UserCreateRequest userDto, UserRole userRole) {
+    public void addUserToGroup(String userId, String groupId, UserRole userRole) {
+        GroupRepresentation group = keycloakRealm().groups().group(groupId).toRepresentation();
+        GroupRepresentation groupRepresentation = getSubGroupByRole(group, userRole);
+        keycloakRealm().users().get(userId).joinGroup(groupRepresentation.getId());
+    }
+
+    public void removeUserFromGroup(String userId, String groupId) {
+        keycloakRealm().users().get(userId).leaveGroup(groupId);
+    }
+
+    private UserRepresentation createUser(UserCreateRequest userDto) {
         UserRepresentation user = new UserRepresentation();
         CredentialRepresentation credential = createPasswordCredentials();
 
@@ -114,16 +132,23 @@ public class KeycloakService {
     private GroupRepresentation createSubGroup(GroupRepresentation group, UserRole userRole) {
         GroupRepresentation subGroup = new GroupRepresentation();
         subGroup.setName(group.getName() + "_" + userRole);
-        subGroup.setRealmRoles(List.of(userRole.name()));
         try (Response response = keycloakRealm().groups().group(group.getId()).subGroup(subGroup)) {
             if (isSuccess(response)) {
                 String subGroupId = extractId(response);
+                assignRoleToGroup(subGroupId, userRole);
                 subGroup.setId(subGroupId);
+                subGroup.setRealmRoles(List.of(userRole.name()));
                 return subGroup;
             } else {
                 throw new RuntimeException();
             }
         }
+    }
+
+    private void assignRoleToGroup(String groupId, UserRole userRole) {
+        GroupResource groupResource = keycloakRealm().groups().group(groupId);
+        RoleRepresentation role = keycloakRealm().roles().get(userRole.name()).toRepresentation();
+        groupResource.roles().realmLevel().add(Collections.singletonList(role));
     }
 
     private void addUserToGroup(String userId, GroupRepresentation group) {
@@ -147,6 +172,13 @@ public class KeycloakService {
         return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL;
     }
 
+    private GroupRepresentation getSubGroupByRole(GroupRepresentation groupRepresentation, UserRole userRole) {
+        return groupRepresentation.getSubGroups().stream()
+            .filter(subGroup ->
+                subGroup.getRealmRoles().get(0).equals(userRole.name()))
+            .findFirst()
+            .orElseThrow();
+    }
 
     private RealmResource keycloakRealm() {
         return keycloak.realm(realm);
