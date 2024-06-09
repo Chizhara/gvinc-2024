@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AddUserToCompanyRequest {
     @NotBlank
-    private final String username;
+    private final String userId;
     @NotNull
     private final UserCreateRequest userCreateRequest;
 

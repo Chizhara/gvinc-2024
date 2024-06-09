@@ -1,7 +1,9 @@
 package com.gnivc.portalservice.service;
 
+import com.gnivc.portalservice.model.user.User;
 import com.gnivc.portalservice.model.user.dto.UserCreateRequest;
 import com.gnivc.portalservice.model.user.UserRole;
+import com.gnivc.portalservice.model.user.dto.UserUpdateRequest;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
@@ -32,6 +34,24 @@ public class KeycloakService {
         addRealmRoleToUser(user.getId(), userRole);
 
         return user;
+    }
+
+    public UserRepresentation updateUser(User user, String userId) {
+        UserRepresentation userRepresentation = keycloakRealm().users().get(userId).toRepresentation();
+        if(user.getUsername() != null) {
+            userRepresentation.setUsername(user.getUsername());
+        }
+        keycloakRealm().users().get(userId).update(userRepresentation);
+        return userRepresentation;
+    }
+
+    public UserRepresentation updateUser(UserUpdateRequest userDto, String userId) {
+        UserRepresentation userRepresentation = keycloakRealm().users().get(userId).toRepresentation();
+        if(userDto.getUsername() != null) {
+            userRepresentation.setUsername(userDto.getUsername());
+        }
+        keycloakRealm().users().get(userId).update(userRepresentation);
+        return userRepresentation;
     }
 
     public UserRepresentation updatePassword(String userId) {

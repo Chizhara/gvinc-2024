@@ -20,5 +20,6 @@ CREATE TABLE companies (
 CREATE TABLE companies_users (
     company_id VARCHAR(36) REFERENCES companies(id) NOT NULL,
     user_id VARCHAR(36) REFERENCES users(id) NOT NULL,
+    role VARCHAR(20) NOT NULL,
     PRIMARY KEY (company_id, user_id)
 )

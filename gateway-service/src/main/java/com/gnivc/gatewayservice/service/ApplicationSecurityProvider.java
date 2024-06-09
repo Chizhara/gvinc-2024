@@ -90,7 +90,7 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
     }
 
     private GroupRepresentation getCompany(String userId, String companyId) {
-        GroupRepresentation companyRep = findCompanyByName(companyId);
+        GroupRepresentation companyRep = keycloak.realm(realm).groups().group(companyId).toRepresentation();
         return getSubGroup(companyRep, userId);
     }
 

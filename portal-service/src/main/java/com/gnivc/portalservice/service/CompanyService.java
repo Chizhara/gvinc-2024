@@ -3,20 +3,26 @@ package com.gnivc.portalservice.service;
 import com.gnivc.portalservice.client.DaDataClient;
 import com.gnivc.portalservice.mapper.CompanyMapper;
 import com.gnivc.portalservice.model.company.Company;
+import com.gnivc.portalservice.model.company.CompanyEmployer;
 import com.gnivc.portalservice.model.company.dto.AddUserToCompanyRequest;
 import com.gnivc.portalservice.model.company.dto.CompanyCreateRequest;
+import com.gnivc.portalservice.model.company.dto.CompanyInfo;
+import com.gnivc.portalservice.model.company.dto.CompanyShortInfo;
 import com.gnivc.portalservice.model.dadata.DaDataCompanySearch;
 import com.gnivc.portalservice.model.dadata.DaDataSuggestionResponse;
 import com.gnivc.portalservice.model.user.User;
 import com.gnivc.portalservice.model.user.UserRole;
 import com.gnivc.portalservice.model.user.dto.UserCreateRequest;
+import com.gnivc.portalservice.repository.CompanyEmployerRepository;
 import com.gnivc.portalservice.repository.CompanyRepository;
 import com.netflix.config.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.management.relation.Role;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,9 +34,10 @@ public class CompanyService {
     private final UserService userService;
     private final CompanyMapper companyMapper;
     private final DaDataClient daDataClient;
+    private final CompanyEmployerRepository companyEmployerRepository;
 
     @Transactional
-    public void createCompany(CompanyCreateRequest companyCreateRequest, String userId) {
+    public CompanyInfo createCompany(CompanyCreateRequest companyCreateRequest, String userId) {
         GroupRepresentation groupRepresentation = null;
         try {
             DaDataSuggestionResponse.Suggestion daDataSuggestionResponse = getCompanyFromDaData(companyCreateRequest.tin());
@@ -42,8 +49,10 @@ public class CompanyService {
             company.setName(groupRepresentation.getName());
 
             User user = userService.getUser(userId);
-            company.setUsers(List.of(user));
             companyRepository.saveAndFlush(company);
+            CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
+            companyEmployerRepository.saveAndFlush(companyEmployer);
+            return companyMapper.toCompanyInfo(company);
         } catch (RuntimeException e) {
             if (groupRepresentation != null) {
                 keycloakService.removeGroup(groupRepresentation.getId());
@@ -52,33 +61,48 @@ public class CompanyService {
         }
     }
 
+    public CompanyInfo getCompanyInfo(String companyId) {
+        Company company = getCompany(companyId);
+        CompanyInfo companyInfo = companyMapper.toCompanyInfo(company);
+        companyInfo.setDriversCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.DRIVER));
+        companyInfo.setLogistsCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.LOGIST));
+        return companyInfo;
+    }
+
+    public List<CompanyShortInfo> getCompanyInfo(Pageable pageable) {
+        List<Company> company = companyRepository.findAll(pageable).getContent();
+        List<CompanyShortInfo> companyInfo = companyMapper.toCompanyShortInfo(company);
+        return companyInfo;
+    }
+
     @Transactional
-    public void addUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, String companyName, UserRole userRole) {
-        Company company = getCompany(companyName);
+    public void addUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, String companyId, UserRole userRole) {
+        Company company = getCompany(companyId);
         if (addUserToCompanyRequest.getUserCreateRequest() != null) {
             addNewUserToCompany(addUserToCompanyRequest, company, userRole);
             return;
         }
-        if (isNotEmpty(addUserToCompanyRequest.getUsername())) {
+        if (isNotEmpty(addUserToCompanyRequest.getUserId())) {
             addExistsUserToCompany(addUserToCompanyRequest, company, userRole);
             return;
         }
         throw new ValidationException("Username is required");
     }
 
-    public Company getCompany(String companyName) {
-        return companyRepository.findByName(companyName)
+    public Company getCompany(String companyId) {
+        return companyRepository.findById(companyId)
             .orElseThrow(); //TODO NOT FOUND ex
     }
 
     private void addExistsUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company,  UserRole userRole) {
-        if (userAssignedToCompany(addUserToCompanyRequest.getUsername(), company)) {
+        if (userAssignedToCompany(addUserToCompanyRequest.getUserId(), company)) {
             throw new ValidationException("Username already assigned to company"); //TODO
         }
-        User user = userService.getUser(addUserToCompanyRequest.getUsername());
+        User user = userService.getUser(addUserToCompanyRequest.getUserId());
         keycloakService.addUserToGroup(user.getId(), company.getId(), userRole);
-        company.getUsers().add(user);
         companyRepository.saveAndFlush(company);
+        CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
+        companyEmployerRepository.saveAndFlush(companyEmployer);
     }
 
     private void addNewUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company,  UserRole userRole) {
@@ -88,8 +112,9 @@ public class CompanyService {
             userService.createUser(userCreateRequest);
             user = userService.getUserByUsername(userCreateRequest.getUsername());
             keycloakService.addUserToGroup(user.getId(), company.getId(), userRole);
-            company.getUsers().add(user);
             companyRepository.saveAndFlush(company);
+            CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
+            companyEmployerRepository.saveAndFlush(companyEmployer);
         } catch (Exception e) {
             if (user != null) {
                 keycloakService.removeUserFromGroup(user.getId(), company.getId());

@@ -37,6 +37,7 @@ public class ApplicationSecurityConfig {
                 requests.pathMatchers("/portal/company/{companyId}/user/admin").hasRole("ADMIN");
                 requests.pathMatchers("/portal/company/{companyId}/user/logist").hasRole("LOGIST");
                 requests.pathMatchers("/portal/company/{companyId}/user/driver").hasAnyRole("ADMIN", "LOGIST");
+                requests.pathMatchers("/portal/company/{companyId}/transport").hasAnyRole("ADMIN", "LOGIST");
                 requests.pathMatchers("/portal/company").hasRole("REGISTRATOR");
             }).build();
     }
