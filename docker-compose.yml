@@ -68,6 +68,20 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - test_network
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8980:8080
+    depends_on:
+      - broker
+    environment:
+      KAFKA_CLUSTERS_0_NAME: broker
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:9092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    networks:
+      - test_network
       
 networks:
   test_network:

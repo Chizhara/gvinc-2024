@@ -1,5 +1,6 @@
 package com.gnivc.portalservice.service;
 
+import com.gnivc.model.DriverInfo;
 import com.gnivc.portalservice.client.DaDataClient;
 import com.gnivc.portalservice.mapper.CompanyMapper;
 import com.gnivc.portalservice.model.company.Company;
@@ -17,14 +18,17 @@ import com.gnivc.portalservice.repository.CompanyEmployerRepository;
 import com.gnivc.portalservice.repository.CompanyRepository;
 import com.netflix.config.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.management.relation.Role;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +39,9 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final DaDataClient daDataClient;
     private final CompanyEmployerRepository companyEmployerRepository;
+    private final KafkaTemplate<String, DriverInfo> kafkaTemplate;
+    @Value("${spring.kafka.topic.driver.name}")
+    private String driverTopic;
 
     @Transactional
     public CompanyInfo createCompany(CompanyCreateRequest companyCreateRequest, String userId) {
@@ -103,6 +110,7 @@ public class CompanyService {
         companyRepository.saveAndFlush(company);
         CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
         companyEmployerRepository.saveAndFlush(companyEmployer);
+        sendUser(user, company, userRole);
     }
 
     private void addNewUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company,  UserRole userRole) {
@@ -115,13 +123,13 @@ public class CompanyService {
             companyRepository.saveAndFlush(company);
             CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
             companyEmployerRepository.saveAndFlush(companyEmployer);
+            sendUser(user, company, userRole);
         } catch (Exception e) {
             if (user != null) {
                 keycloakService.removeUserFromGroup(user.getId(), company.getId());
             }
             throw new RuntimeException(e); //TODO
         }
-
     }
 
     private DaDataSuggestionResponse.Suggestion getCompanyFromDaData(Long tin) {
@@ -141,4 +149,13 @@ public class CompanyService {
         return value != null && !value.isEmpty();
     }
 
+    private void sendUser(User user, Company company, UserRole userRole) {
+        switch (userRole) {
+            case DRIVER:
+                kafkaTemplate.send(driverTopic, new DriverInfo(UUID.fromString(user.getId()),
+                    new DriverInfo.UserInfo(user.getUsername(), user.getUsername(), user.getSurname(), user.getEmail()),
+                    new DriverInfo.AddCompanyInfo(UUID.fromString(company.getId()))));
+                break;
+        }
+    }
 }

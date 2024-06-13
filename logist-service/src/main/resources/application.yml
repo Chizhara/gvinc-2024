@@ -1,0 +1,13 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: logist-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/logist
+  kafka:
+    bootstrap-servers: localhost:29092
+    topic:
+      driver:
+        name: logist.driver.info

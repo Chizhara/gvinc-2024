@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:8082}
+
 spring:
   application:
     name: portal-service
@@ -19,10 +22,13 @@ spring:
       ssl:
         enable: true
       auth: true
-
-
-server:
-  port: 8082
+  kafka:
+    bootstrap-servers: localhost:29092
+    topic:
+      driver:
+        name: logist.driver.info
+      transport:
+        name: logist.transport.info
 
 keycloak:
   server-url: http://localhost:8080
@@ -31,3 +37,4 @@ keycloak:
 dadata:
   base-url: http://suggestions.dadata.ru
   company-get-path: http://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party
+

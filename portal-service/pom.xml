@@ -19,7 +19,6 @@
     <dependencies>
 
         <!--spring-->
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
@@ -52,6 +51,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
             <version>3.1.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>3.1.2</version>
         </dependency>
 
         <!--keycloak-->
@@ -95,6 +100,12 @@
             <artifactId>lombok-mapstruct-binding</artifactId>
             <version>0.2.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>gnivc.com</groupId>
+            <artifactId>dto-models</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -102,6 +113,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.baeldung.spring.kafka.KafkaApplication</mainClass>
+                </configuration>
             </plugin>
 
             <plugin>

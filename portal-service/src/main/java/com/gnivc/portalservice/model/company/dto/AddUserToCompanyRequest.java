@@ -1,9 +1,6 @@
 package com.gnivc.portalservice.model.company.dto;
 
-import com.gnivc.portalservice.model.user.User;
-import com.gnivc.portalservice.model.user.UserRole;
 import com.gnivc.portalservice.model.user.dto.UserCreateRequest;
-import com.gnivc.portalservice.validation.EnumFilter;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

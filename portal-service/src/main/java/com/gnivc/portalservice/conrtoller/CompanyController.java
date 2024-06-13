@@ -9,6 +9,7 @@ import com.gnivc.portalservice.model.user.UserRole;
 import com.gnivc.portalservice.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,7 +55,7 @@ public class CompanyController {
         companyService.addUserToCompany(addUserToCompanyRequest, companyId, UserRole.ADMIN);
     }
 
-    @PostMapping("/{companyId}/user")
+    @PostMapping("/{companyId}/user/logist")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLogistToCompany(@PathVariable String companyId,
                                  @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {

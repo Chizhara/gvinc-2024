@@ -1,7 +1,5 @@
-package com.gnivc.portalservice.model.transport;
+package com.gnivc.logistservice.model;
 
-import com.gnivc.portalservice.model.company.Company;
-import com.gnivc.portalservice.model.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,8 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.postgresql.geometric.PGpoint;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -26,18 +24,17 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "transports", schema = "public")
-public class Transport {
+@Table(name = "tasks", schema = "public")
+public class Task {
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String vin;
-    private LocalDate releaseDate;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "register_id")
-    private User register;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "company_id")
-    private Company company;
+    private PGpoint locationStart;
+    private PGpoint locationEnd;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
+
 }
