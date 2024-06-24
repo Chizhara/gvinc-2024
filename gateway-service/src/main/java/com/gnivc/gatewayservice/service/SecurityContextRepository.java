@@ -3,6 +3,7 @@ package com.gnivc.gatewayservice.service;
 import com.gnivc.gatewayservice.model.AuthenticationImpl;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Optional;
 
+@Primary
 @Component
 @RequiredArgsConstructor
 public class SecurityContextRepository implements ServerSecurityContextRepository {
@@ -53,6 +55,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     }
 
     private Mono<? extends SecurityContext> getSecurityContext(Authentication auth) {
-        return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+        Mono<? extends SecurityContext> context = authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+        return context;
     }
 }

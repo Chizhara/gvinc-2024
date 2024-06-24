@@ -3,7 +3,6 @@ package com.gnivc.gatewayservice.service;
 import com.gnivc.gatewayservice.model.AuthenticationImpl;
 import com.gnivc.gatewayservice.model.UserDetailsImpl;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -14,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -42,13 +40,12 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) throws JwtException {
         AuthenticationImpl auth = (AuthenticationImpl) authentication;
-
         return getJwt(auth).map(jwt -> {
             String userId = jwt.getClaimAsString(USER_ID_CLAIM);
             String username = jwt.getClaimAsString(USERNAME_CLAIM);
             UserResource user = getUser(userId);
             List<String> roles = getUserRole(user, auth);
-            auth.setDetails(new UserDetailsImpl(userId, username, null, roles));
+            auth.setDetails(new UserDetailsImpl(userId, username, "wyyp8z", roles));
             auth.setAuthenticated(true);
             return auth;
         });
@@ -84,7 +81,7 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
             .listAll()
             .stream()
             .filter(roleRepresentation ->
-                !roleRepresentation.getName().equals("default-roles-gvinc "))
+                !roleRepresentation.getName().equals("default-roles-gvinc"))
             .findFirst()
             .orElse(null);
     }
@@ -113,8 +110,8 @@ public class ApplicationSecurityProvider implements ReactiveAuthenticationManage
             .anyMatch(member -> member.getId().equals(memberId));
     }
 
-    private Mono<Jwt> getJwt(BearerTokenAuthenticationToken bearerTokenAuthentication) {
-        return jwtDecoder.decode(bearerTokenAuthentication.getToken().substring(7));
+    private Mono<Jwt> getJwt(AuthenticationImpl authentication) {
+        return jwtDecoder.decode(authentication.getToken().substring(7));
     }
 
     private boolean isCompanyEmpty(AuthenticationImpl auth) {

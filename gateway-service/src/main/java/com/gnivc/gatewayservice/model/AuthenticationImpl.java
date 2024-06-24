@@ -1,19 +1,60 @@
 package com.gnivc.gatewayservice.model;
 
 import lombok.Getter;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
+import lombok.Setter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
-public class AuthenticationImpl extends BearerTokenAuthenticationToken {
-    @Getter
+import java.util.Collection;
+
+@Getter
+public class AuthenticationImpl implements Authentication {
     private String companyId;
+    private String token;
+    @Setter
+    private UserDetailsImpl details;
 
     public AuthenticationImpl(String token) {
-        super(token);
+        this.token = token;
     }
 
     public AuthenticationImpl(String token, String companyId) {
-        super(token);
         this.companyId = companyId;
+        this.token = token;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return details.getAuthorities();
+    }
+
+    @Override
+    public Object getCredentials() {
+        return token;
+    }
+
+    @Override
+    public Object getDetails() {
+        return details;
+    }
+
+    @Override
+    public Object getPrincipal() {
+        return null;
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return true;
+    }
+
+    @Override
+    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+
+    }
+
+    @Override
+    public String getName() {
+        return details.getUsername();
+    }
 }

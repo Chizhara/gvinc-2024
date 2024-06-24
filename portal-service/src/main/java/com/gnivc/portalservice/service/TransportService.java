@@ -1,7 +1,6 @@
 package com.gnivc.portalservice.service;
 
 import com.gnivc.model.TransportInfo;
-import com.gnivc.portalservice.mapper.CompanyMapper;
 import com.gnivc.portalservice.mapper.TransportMapper;
 import com.gnivc.portalservice.model.company.Company;
 import com.gnivc.portalservice.model.transport.Transport;
@@ -33,7 +32,7 @@ public class TransportService {
         Transport transport = transportMapper.toTransport(request);
         transport.setCompany(company);
         transport.setRegister(user);
-        transportRepository.save(transport);
+        transportRepository.saveAndFlush(transport);
         send(transport);
         return transportMapper.toTransportCreateResponse(transport);
     }

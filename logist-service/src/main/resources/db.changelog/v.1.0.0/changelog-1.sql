@@ -37,10 +37,20 @@ CREATE TABLE IF NOT EXISTS cargos
 CREATE TABLE IF NOT EXISTS tasks
 (
     id           UUID PRIMARY KEY,
-    start_point  POINT NOT NULL,
-    end_point    POINT NOT NULL,
+    start_point_lat  FLOAT NOT NULL,
+    start_point_lon  FLOAT NOT NULL,
+    end_point_lat  FLOAT NOT NULL,
+    end_point_lon  FLOAT NOT NULL,
     transport_id UUID REFERENCES transports (id),
     driver_id    UUID REFERENCES drivers (id)
+);
+
+CREATE TABLE IF NOT EXISTS routes_events(
+    id UUID PRIMARY KEY,
+    route_id UUID NOT NULL,
+    task_id UUID REFERENCES tasks(id),
+    time TIMESTAMP NOT NULL,
+    type VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tasks_cargos

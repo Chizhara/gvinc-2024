@@ -41,14 +41,6 @@ public class EmailConfig {
         props.put("mail.debug", "true");
         props.put("mail.smtp.ssl.trust", "*");
         mailSender.setJavaMailProperties(props);
-
-        SimpleMailMessage message = new SimpleMailMessage();
-
-        message.setFrom(user);
-        message.setTo("federico.chizhara666@yandex.ru");
-        message.setSubject("Registation");
-        message.setText("НАЧАЛИ");
-        mailSender.send(message);
         return mailSender;
     }
 }

@@ -1,6 +1,6 @@
 package com.gnivc.logistservice.repository;
 
-import com.gnivc.logistservice.model.Transport;
+import com.gnivc.logistservice.model.transport.Transport;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

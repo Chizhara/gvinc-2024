@@ -10,6 +10,8 @@ import java.time.LocalDate;
 public class TransportCreateRequest {
     @NotBlank
     private final String vin;
+    @NotBlank
+    private final String gosNumber;
     @NotNull
     private final LocalDate releaseDate;
 }

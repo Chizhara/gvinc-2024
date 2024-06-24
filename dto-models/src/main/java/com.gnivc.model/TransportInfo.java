@@ -13,6 +13,7 @@ import java.util.UUID;
 public class TransportInfo {
     private UUID id;
     private String vin;
+    private String gosNumber;
     private LocalDate releaseDate;
     private UUID registerId;
     private UUID companyId;

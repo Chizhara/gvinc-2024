@@ -7,6 +7,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  liquibase:
+    change-log: /db/changelog/db.changelog-master.xml
   security:
     oauth2:
       client:
@@ -26,9 +28,9 @@ spring:
     bootstrap-servers: localhost:29092
     topic:
       driver:
-        name: logist.driver.info
+        name: portal.driver.info
       transport:
-        name: logist.transport.info
+        name: portal.transport.info
 
 keycloak:
   server-url: http://localhost:8080

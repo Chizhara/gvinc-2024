@@ -1,5 +1,6 @@
 package com.gnivc.portalservice.service;
 
+import com.gnivc.commonexception.exception.NotFoundException;
 import com.gnivc.portalservice.mapper.UserMapper;
 import com.gnivc.portalservice.model.user.User;
 import com.gnivc.portalservice.model.user.UserRole;
@@ -63,12 +64,12 @@ public class UserService {
 
     public User getUser(String userId) {
         return userRepository.findById(userId)
-            .orElseThrow(); //TODO notfound ex
+            .orElseThrow(() -> new NotFoundException(User.class, userId)); //TODO notfound ex
     }
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-            .orElseThrow(); //TODO notfound ex
+            .orElseThrow(() -> new NotFoundException(User.class, username)); //TODO notfound ex
     }
 
     public UserCreateResponse updatePassword(String userId) {

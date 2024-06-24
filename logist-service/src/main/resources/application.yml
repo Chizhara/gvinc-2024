@@ -2,6 +2,11 @@ server:
   port: ${SERVER_PORT:8083}
 
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: db.changelog/db.changelog-master.xml
   application:
     name: logist-service
   datasource:
@@ -9,5 +14,14 @@ spring:
   kafka:
     bootstrap-servers: localhost:29092
     topic:
+      cargo:
+        name: logist.cargo.info
+      task:
+        name: logist.task.info
       driver:
-        name: logist.driver.info
+        name: portal.driver.info
+        buffer:
+          name: logist.driver.info.buf
+      transport:
+        buffer:
+          name: logist.transport.info.buf

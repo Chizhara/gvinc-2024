@@ -9,7 +9,6 @@ import com.gnivc.portalservice.model.user.UserRole;
 import com.gnivc.portalservice.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,18 +30,16 @@ public class CompanyController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompanyInfo createCompany(@RequestHeader("x-userId") String userId,
-                              @RequestBody CompanyCreateRequest companyCreateRequest) {
+                                     @RequestBody CompanyCreateRequest companyCreateRequest) {
         return companyService.createCompany(companyCreateRequest, userId);
     }
 
     @GetMapping("/{companyId}")
-    @ResponseStatus
     public CompanyInfo getCompanyInfo(@PathVariable String companyId) {
         return companyService.getCompanyInfo(companyId);
     }
 
     @GetMapping
-    @ResponseStatus
     public List<CompanyShortInfo> getCompanyInfo(@RequestParam(defaultValue = "0") int from,
                                                  @RequestParam(defaultValue = "10") int size) {
         return companyService.getCompanyInfo(PageableGenerator.getPageable(from, size));
@@ -51,21 +48,21 @@ public class CompanyController {
     @PostMapping("/{companyId}/user/admin")
     @ResponseStatus(HttpStatus.CREATED)
     public void addAdminToCompany(@PathVariable String companyId,
-                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+                                  @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
         companyService.addUserToCompany(addUserToCompanyRequest, companyId, UserRole.ADMIN);
     }
 
     @PostMapping("/{companyId}/user/logist")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLogistToCompany(@PathVariable String companyId,
-                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+                                   @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
         companyService.addUserToCompany(addUserToCompanyRequest, companyId, UserRole.LOGIST);
     }
 
     @PostMapping("/{companyId}/user/driver")
     @ResponseStatus(HttpStatus.CREATED)
     public void addDriverToCompany(@PathVariable String companyId,
-                                 @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
+                                   @RequestBody AddUserToCompanyRequest addUserToCompanyRequest) {
         companyService.addUserToCompany(addUserToCompanyRequest, companyId, UserRole.DRIVER);
     }
 

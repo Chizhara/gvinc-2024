@@ -1,6 +1,6 @@
 package com.gnivc.logistservice.repository;
 
-import com.gnivc.logistservice.model.Driver;
+import com.gnivc.logistservice.model.driver.Driver;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

@@ -24,7 +24,11 @@ spring:
           uri: ${portal.server-url}
           predicates:
             - Path=/portal/**
-#        - id: logist
-#          uri: ${logist.server-url}
-#          predicates:
-#            - Path=/logist/**
+        - id: logist
+          uri: ${logist.server-url}
+          predicates:
+            - Path=/logist/**
+        - id: driver
+          uri: ${driver.server-url}
+          predicates:
+            - Path=/driver/**

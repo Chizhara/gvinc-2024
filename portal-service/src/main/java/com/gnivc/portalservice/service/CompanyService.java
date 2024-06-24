@@ -1,5 +1,6 @@
 package com.gnivc.portalservice.service;
 
+import com.gnivc.commonexception.exception.NotFoundException;
 import com.gnivc.model.DriverInfo;
 import com.gnivc.portalservice.client.DaDataClient;
 import com.gnivc.portalservice.mapper.CompanyMapper;
@@ -18,7 +19,6 @@ import com.gnivc.portalservice.repository.CompanyEmployerRepository;
 import com.gnivc.portalservice.repository.CompanyRepository;
 import com.netflix.config.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -71,8 +71,8 @@ public class CompanyService {
     public CompanyInfo getCompanyInfo(String companyId) {
         Company company = getCompany(companyId);
         CompanyInfo companyInfo = companyMapper.toCompanyInfo(company);
-        companyInfo.setDriversCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.DRIVER));
-        companyInfo.setLogistsCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.LOGIST));
+        companyInfo.setDriversCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.DRIVER.name()));
+        companyInfo.setLogistsCount(companyRepository.countByCompanyNameAndRoles(company.getId(), UserRole.LOGIST.name()));
         return companyInfo;
     }
 
@@ -98,10 +98,10 @@ public class CompanyService {
 
     public Company getCompany(String companyId) {
         return companyRepository.findById(companyId)
-            .orElseThrow(); //TODO NOT FOUND ex
+            .orElseThrow(() -> new NotFoundException(Company.class, companyId)); //TODO NOT FOUND ex
     }
 
-    private void addExistsUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company,  UserRole userRole) {
+    private void addExistsUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company, UserRole userRole) {
         if (userAssignedToCompany(addUserToCompanyRequest.getUserId(), company)) {
             throw new ValidationException("Username already assigned to company"); //TODO
         }
@@ -113,7 +113,7 @@ public class CompanyService {
         sendUser(user, company, userRole);
     }
 
-    private void addNewUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company,  UserRole userRole) {
+    private void addNewUserToCompany(AddUserToCompanyRequest addUserToCompanyRequest, Company company, UserRole userRole) {
         User user = null;
         try {
             UserCreateRequest userCreateRequest = addUserToCompanyRequest.getUserCreateRequest();
@@ -121,7 +121,7 @@ public class CompanyService {
             user = userService.getUserByUsername(userCreateRequest.getUsername());
             keycloakService.addUserToGroup(user.getId(), company.getId(), userRole);
             companyRepository.saveAndFlush(company);
-            CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), UserRole.REGISTRATOR);
+            CompanyEmployer companyEmployer = new CompanyEmployer(user.getId(), company.getId(), userRole);
             companyEmployerRepository.saveAndFlush(companyEmployer);
             sendUser(user, company, userRole);
         } catch (Exception e) {
@@ -152,9 +152,14 @@ public class CompanyService {
     private void sendUser(User user, Company company, UserRole userRole) {
         switch (userRole) {
             case DRIVER:
-                kafkaTemplate.send(driverTopic, new DriverInfo(UUID.fromString(user.getId()),
-                    new DriverInfo.UserInfo(user.getUsername(), user.getUsername(), user.getSurname(), user.getEmail()),
-                    new DriverInfo.AddCompanyInfo(UUID.fromString(company.getId()))));
+                kafkaTemplate.send(driverTopic,
+                    new DriverInfo(UUID.fromString(user.getId()),
+                        new DriverInfo.UserInfo(
+                            user.getUsername(),
+                            user.getUsername(),
+                            user.getSurname(),
+                            user.getEmail()),
+                        new DriverInfo.AddCompanyInfo(UUID.fromString(company.getId()))));
                 break;
         }
     }

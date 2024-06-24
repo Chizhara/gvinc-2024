@@ -33,6 +33,7 @@ public class Transport {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private String vin;
+    private String gosNumber;
     private LocalDate releaseDate;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "register_id")

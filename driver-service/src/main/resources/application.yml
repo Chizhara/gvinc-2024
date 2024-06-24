@@ -1,0 +1,33 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: db.changelog/db.changelog-master.xml
+  application:
+    name: driver-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/driver
+  kafka:
+    bootstrap-servers: localhost:29092
+    topic:
+      cargo:
+        name: driver.cargo.info
+      task:
+        name: driver.task.info
+        buffer:
+          name: driver.task.info.buf
+      driver:
+        buffer:
+          name: driver.driver.info.buf
+        name: portal.driver.info
+      transport:
+        buffer:
+          name: driver.transport.info.buf
+      route:
+        event:
+          name: driver.route.event.info
