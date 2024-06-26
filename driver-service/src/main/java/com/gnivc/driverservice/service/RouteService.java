@@ -3,7 +3,6 @@ package com.gnivc.driverservice.service;
 import com.gnivc.commonexception.exception.ForbiddenAccessException;
 import com.gnivc.commonexception.exception.InvalidValueException;
 import com.gnivc.commonexception.exception.NotFoundException;
-import com.gnivc.driverservice.kafka.KafkaAppListener;
 import com.gnivc.driverservice.mapper.RouteMapper;
 import com.gnivc.driverservice.model.route.Route;
 import com.gnivc.driverservice.model.route.RouteEvent;
@@ -43,7 +42,7 @@ public class RouteService {
     private String routeTopic;
 
     @Transactional
-    public RouteInfoResponse createRoute(UUID driverId, UUID taskId) {
+    public RouteInfoResponse createRoute(UUID driverId, UUID taskId, UUID companyId) {
         Route route = new Route();
         Task task = taskService.getTask(taskId);
         if (!task.getDriverId().equals(driverId)) {
@@ -53,12 +52,15 @@ public class RouteService {
         routeRepository.saveAndFlush(route);
         RouteEvent routeEvent = createRouteEvent(route, RouteEventType.CREATED);
         routeEventRepository.saveAndFlush(routeEvent);
-        sendRouteEventInfo(routeEvent);
+        sendRouteEventInfo(routeEvent, companyId);
         return getRouteInfo(route.getId());
     }
 
     @Transactional
-    public RouteInfoResponse addRouteEvent(RouteEventRequest routeEventRequest, UUID routeId, UUID driverId) {
+    public RouteInfoResponse addRouteEvent(RouteEventRequest routeEventRequest,
+                                           UUID routeId,
+                                           UUID driverId,
+                                           UUID companyId) {
         Route route = getRoute(routeId);
         if (!route.getTask().getDriverId().equals(driverId)) {
             throw new ForbiddenAccessException(driverId, Route.class, routeId);
@@ -66,7 +68,7 @@ public class RouteService {
         validateRouteEventType(routeEventRequest, routeId);
         RouteEvent routeEvent = createRouteEvent(route, routeEventRequest);
         routeEventRepository.saveAndFlush(routeEvent);
-        sendRouteEventInfo(routeEvent);
+        sendRouteEventInfo(routeEvent, companyId);
         return getRouteInfo(routeId);
     }
 
@@ -138,8 +140,9 @@ public class RouteService {
             .build();
     }
 
-    private void sendRouteEventInfo(RouteEvent routeEvent) {
+    private void sendRouteEventInfo(RouteEvent routeEvent, UUID companyId) {
         RouteEventInfo routeEventInfo = routeMapper.toRouteEventInfo(routeEvent);
+        routeEventInfo.setCompanyId(companyId);
         routeEventKafkaTemplate.send(routeTopic, routeEventInfo);
     }
 }

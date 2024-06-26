@@ -5,12 +5,14 @@ import com.gnivc.logistservice.PageableGenerator;
 import com.gnivc.logistservice.mapper.TaskMapper;
 import com.gnivc.logistservice.model.cargo.Cargo;
 import com.gnivc.logistservice.model.cargo.TaskCargo;
+import com.gnivc.logistservice.model.company.Company;
 import com.gnivc.logistservice.model.driver.Driver;
 import com.gnivc.logistservice.model.task.Task;
 import com.gnivc.logistservice.model.task.TaskCreateRequest;
 import com.gnivc.logistservice.model.task.TaskInfo;
 import com.gnivc.logistservice.model.transport.Transport;
 import com.gnivc.logistservice.repository.CargoRepository;
+import com.gnivc.logistservice.repository.CompanyRepository;
 import com.gnivc.logistservice.repository.TaskCargoRepository;
 import com.gnivc.logistservice.repository.TaskRepository;
 import com.gnivc.model.Point;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -33,6 +36,7 @@ public class TaskService {
     private final DriverService driverService;
     private final CargoRepository cargoRepository;
     private final TaskCargoRepository taskCargoRepository;
+    private final CompanyRepository companyRepository;
     private final KafkaTemplate<String, com.gnivc.model.TaskInfo> taskKafkaTemplate;
     @Value("${spring.kafka.topic.task.name}")
     private String taskTopic;
@@ -46,6 +50,8 @@ public class TaskService {
         getCargos(taskCreateRequest);
         task.setTransport(transport);
         task.setDriver(driver);
+        task.setCompany(getCompany(companyId));
+        task.setCreateTime(Instant.now());
         taskRepository.saveAndFlush(task);
 
         List<TaskCargo> taskCargos = taskCreateRequest.getCargoDetails().stream()
@@ -92,6 +98,11 @@ public class TaskService {
             throw new RuntimeException();
         }
         return cargos;
+    }
+
+    private Company getCompany(UUID companyId) {
+        return companyRepository.findById(companyId)
+            .orElseThrow(() -> new NotFoundException(Company.class, companyId));
     }
 
     private void sendKafka(Task task, List<TaskCargo> taskCargos) {

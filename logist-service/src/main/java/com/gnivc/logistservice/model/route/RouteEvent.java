@@ -1,5 +1,6 @@
 package com.gnivc.logistservice.model.route;
 
+import com.gnivc.logistservice.model.company.Company;
 import com.gnivc.logistservice.model.task.Task;
 import com.gnivc.model.RouteEventType;
 import jakarta.persistence.Column;
@@ -35,6 +36,9 @@ public class RouteEvent {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private Task task;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
     @Column(name = "time")
     private Instant timestamp;
     @Enumerated(EnumType.STRING)

@@ -14,6 +14,7 @@ public class RouteEventInfo {
     private UUID Id;
     private UUID routeId;
     private UUID taskId;
+    private UUID companyId;
     private RouteEventType eventType;
     private Instant eventTime;
 }

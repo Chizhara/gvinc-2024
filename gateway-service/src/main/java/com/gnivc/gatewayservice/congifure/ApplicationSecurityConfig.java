@@ -34,6 +34,7 @@ public class ApplicationSecurityConfig {
                 requests.pathMatchers("/portal/company").hasAuthority("REGISTRATOR");
                 requests.pathMatchers("/logist/**").hasAnyAuthority("ADMIN");
                 requests.pathMatchers("/driver/**").hasAnyAuthority("DRIVER");
+                requests.pathMatchers("/dwh/**").authenticated();
             }).build();
     }
 

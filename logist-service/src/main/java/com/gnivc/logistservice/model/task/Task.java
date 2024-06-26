@@ -1,6 +1,7 @@
 package com.gnivc.logistservice.model.task;
 
 import com.gnivc.logistservice.model.cargo.TaskCargo;
+import com.gnivc.logistservice.model.company.Company;
 import com.gnivc.logistservice.model.driver.Driver;
 import com.gnivc.logistservice.model.transport.Transport;
 import jakarta.persistence.Column;
@@ -19,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,9 +48,14 @@ public class Task {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     private Driver driver;
+    @Column(name = "create_time")
+    private Instant createTime;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transport_id")
     private Transport transport;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private List<TaskCargo> cargos;

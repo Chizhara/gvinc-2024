@@ -13,6 +13,7 @@ public interface RouteMapper {
     @Mapping(target = "routeId", source = "route.id")
     @Mapping(target = "eventTime", source = "time")
     @Mapping(target = "taskId", source = "route.task.id")
+    @Mapping(target = "companyId", ignore = true)
     RouteEventInfo toRouteEventInfo(RouteEvent routeEvent);
 
     @Mapping(target = "id", ignore = true)
